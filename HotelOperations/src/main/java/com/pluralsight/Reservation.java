@@ -6,10 +6,10 @@ public class Reservation {
     private boolean isWeekend;
 
     public Reservation(String roomType, int numberOfNights, boolean isWeekend) {
-        if (!roomType.equalsIsIgnoreCase("king") && !roomType.equalsIsIgnoreCase("double")) {
+        if (!roomType.equalsIgnoreCase("king") && !roomType.equalsIgnoreCase("double")) {
             throw new IllegalArgumentException("Room type must be 'king' or 'double'");
         }
-        if (numerOfNights <= 0) {
+        if (numberOfNights <= 0) {
             throw new IllegalArgumentException("Number of nights must be positive");
         }
         this.roomType = roomType.toLowerCase();
@@ -23,7 +23,7 @@ public class Reservation {
 
     public void setRoomType(String roomType) {
         if (!roomType.equalsIgnoreCase("king") && !roomType.equalsIgnoreCase("double")) {
-            throw new IllegalArgumentException("Room type must be king or double");
+            throw new IllegalArgumentException("Room type must be 'king' or 'double'");
         }
         this.roomType = roomType.toLowerCase();
     }
@@ -34,6 +34,10 @@ public class Reservation {
     }
 
     public int getNumberOfNights() {
+        return numberOfNights;
+    }
+
+    public void setNumberOfNights(int numberOfNights) {
         if (numberOfNights <= 0) {
             throw new IllegalArgumentException("Number of nights must be positive");
         }
@@ -44,12 +48,11 @@ public class Reservation {
         return isWeekend;
     }
 
-    public void setIsWeekend(boolean isWeekend){
+    public void setIsWeekend(boolean isWeekend) {
         this.isWeekend = isWeekend;
     }
 
-    public double getReservationTotal(){
+    public double getReservationTotal() {
         return getPrice() * numberOfNights;
     }
-
 }
