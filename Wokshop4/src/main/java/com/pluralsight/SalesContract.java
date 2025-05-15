@@ -1,10 +1,10 @@
 package com.pluralsight;
 
 public class SalesContract extends Contract {
-    private double salesTaxRate = 0.05;
-    private double recordingFee = 100.0;
-    private double processingFee;
-    private boolean isFinanced;
+    private final double salesTaxRate = 0.05;
+    private final double recordingFee = 100.0;
+    private final double processingFee;
+    private final boolean isFinanced;
 
     public SalesContract(String date, String customerName, String customerEmail, Vehicle vehicle, boolean isFinanced) {
         super(date, customerName, customerEmail, vehicle);
@@ -12,12 +12,10 @@ public class SalesContract extends Contract {
         this.processingFee = vehicle.getPrice() < 10000 ? 295.0 : 495.0;
     }
 
-    // Getters and Setters
-    public boolean isFinanced() { return isFinanced; }
-    public void setFinanced(boolean isFinanced) { this.isFinanced = isFinanced; }
     public double getSalesTaxRate() { return salesTaxRate; }
     public double getRecordingFee() { return recordingFee; }
     public double getProcessingFee() { return processingFee; }
+    public boolean isFinanced() { return isFinanced; }
 
     @Override
     public double getTotalPrice() {
@@ -32,7 +30,6 @@ public class SalesContract extends Contract {
         double totalPrice = getTotalPrice();
         double interestRate = totalPrice >= 10000 ? 0.0425 : 0.0525;
         int months = totalPrice >= 10000 ? 48 : 24;
-        // Monthly payment formula: P * (r / 12) / (1 - (1 + r/12)^(-n))
         double monthlyRate = interestRate / 12;
         return totalPrice * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
     }

@@ -13,7 +13,6 @@ public abstract class Contract {
         this.vehicle = vehicle;
     }
 
-    // Getters and Setters
     public String getDate() { return date; }
     public void setDate(String date) { this.date = date; }
     public String getCustomerName() { return customerName; }
@@ -23,7 +22,6 @@ public abstract class Contract {
     public Vehicle getVehicle() { return vehicle; }
     public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
 
-    // Abstract methods
     public abstract double getTotalPrice();
     public abstract double getMonthlyPayment();
 }

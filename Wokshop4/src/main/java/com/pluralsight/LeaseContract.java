@@ -1,8 +1,8 @@
 package com.pluralsight;
 
 public class LeaseContract extends Contract {
-    private double expectedEndingValue;
-    private double leaseFee;
+    private final double expectedEndingValue;
+    private final double leaseFee;
     private static final double LEASE_RATE = 0.04;
     private static final int LEASE_MONTHS = 36;
 
@@ -12,7 +12,6 @@ public class LeaseContract extends Contract {
         this.leaseFee = vehicle.getPrice() * 0.07;
     }
 
-    // Getters and Setters
     public double getExpectedEndingValue() { return expectedEndingValue; }
     public double getLeaseFee() { return leaseFee; }
 
