@@ -10,7 +10,11 @@ import java.util.List;
 public class Dealership {
     private final List<Vehicle> inventory;
     private final ContractFileManager contractFileManager;
-    private static final String INVENTORY_FILE = "C:/pluralsight/workshops/adv-dealership-project/dealership.txt";
+    private static final String[] INVENTORY_FILES = {
+            "./dealership.csv",
+            "C:/Users/Student/pluralsight/workbook4/wokshop4/dealership.csv",
+            "C:/Users/Student/pluralsight/workbook4/workshop4/dealership.csv"
+    };
 
     public Dealership() {
         this.inventory = new ArrayList<>();
@@ -20,25 +24,44 @@ public class Dealership {
 
     private void loadInventory() {
         System.out.println("DEBUG: Current working directory: " + System.getProperty("user.dir"));
-        System.out.println("DEBUG: Attempting to load inventory from: " + INVENTORY_FILE);
-        File file = new File(INVENTORY_FILE);
-        System.out.println("DEBUG: File exists: " + file.exists());
-        System.out.println("DEBUG: File is readable: " + file.canRead());
+        File file = null;
+        String selectedPath = null;
+
+        // Try each file path
+        for (String path : INVENTORY_FILES) {
+            file = new File(path);
+            System.out.println("DEBUG: Checking path: " + path);
+            System.out.println("DEBUG: File exists: " + file.exists());
+            System.out.println("DEBUG: File is readable: " + file.canRead());
+            if (file.exists() && file.canRead()) {
+                selectedPath = path;
+                break;
+            }
+        }
+
+        if (selectedPath == null) {
+            System.out.println("ERROR: Could not find 'dealership.csv' at any of the following paths:");
+            for (String path : INVENTORY_FILES) {
+                System.out.println(" - " + path);
+            }
+            System.out.println("ERROR: Please place 'dealership.csv' in the project root (current working directory: " + System.getProperty("user.dir") + ")");
+            loadDefaultVehicle();
+            return;
+        }
+
+        System.out.println("DEBUG: Attempting to load inventory from: " + selectedPath);
+        try {
+            System.out.println("DEBUG: Canonical path: " + file.getCanonicalPath());
+        } catch (IOException e) {
+            System.out.println("DEBUG: Failed to get canonical path: " + e.getMessage());
+        }
         System.out.println("DEBUG: File absolute path: " + file.getAbsolutePath());
         System.out.println("DEBUG: File size (bytes): " + file.length());
+        System.out.println("DEBUG: Parent directory exists: " + (file.getParentFile() != null && file.getParentFile().exists()));
 
-        if (!file.exists()) {
-            System.out.println("DEBUG: File does not exist at specified path.");
-            loadDefaultVehicle();
-            return;
-        }
-        if (!file.canRead()) {
-            System.out.println("DEBUG: File is not readable (check permissions).");
-            loadDefaultVehicle();
-            return;
-        }
         if (file.length() == 0) {
             System.out.println("DEBUG: File is empty.");
+            System.out.println("ERROR: 'dealership.csv' is empty at: " + file.getAbsolutePath());
             loadDefaultVehicle();
             return;
         }
@@ -48,22 +71,31 @@ public class Dealership {
             String line;
             int lineNumber = 0;
             boolean hasContent = false;
+            boolean isFirstLine = true;
             while ((line = reader.readLine()) != null) {
-                hasContent = true;
                 lineNumber++;
-                line = line.replace("\r", "").trim();
-                System.out.println("DEBUG: Line " + lineNumber + " raw content: [" + line + "]");
-                if (line.isEmpty()) {
-                    System.out.println("DEBUG: Skipping empty line " + lineNumber);
-                    continue;
-                }
-                String[] parts = line.split("\\|", -1);
-                System.out.println("DEBUG: Line " + lineNumber + " split into " + parts.length + " parts: " + String.join(", ", parts));
-                if (parts.length != 8) {
-                    System.out.println("DEBUG: Error at line " + lineNumber + ": Expected 8 fields, found " + parts.length);
-                    continue;
-                }
                 try {
+                    line = line.trim();
+                    System.out.println("DEBUG: Line " + lineNumber + " raw content: [" + line + "]");
+                    if (line.isEmpty()) {
+                        System.out.println("DEBUG: Skipping empty line " + lineNumber);
+                        continue;
+                    }
+                    // Skip header row
+                    if (isFirstLine) {
+                        System.out.println("DEBUG: Skipping header row: " + line);
+                        isFirstLine = false;
+                        continue;
+                    }
+                    // Log raw bytes
+                    System.out.println("DEBUG: Line " + lineNumber + " byte length: " + line.getBytes().length);
+                    // Parse CSV line
+                    String[] parts = line.split(",", -1);
+                    System.out.println("DEBUG: Line " + lineNumber + " split into " + parts.length + " parts: " + String.join(", ", parts));
+                    if (parts.length != 8) {
+                        System.out.println("DEBUG: Error at line " + lineNumber + ": Expected 8 fields, found " + parts.length);
+                        continue;
+                    }
                     String vin = parts[0].trim();
                     if (vin.isEmpty()) {
                         System.out.println("DEBUG: Error at line " + lineNumber + ": VIN is empty");
@@ -94,18 +126,27 @@ public class Dealership {
                     double price = Double.parseDouble(parts[7].trim());
                     Vehicle vehicle = new Vehicle(vin, year, make, model, type, color, odometer, price);
                     inventory.add(vehicle);
+                    hasContent = true;
                     System.out.println("DEBUG: Successfully added vehicle: VIN=" + vin + ", Make=" + make + ", Model=" + model);
                 } catch (NumberFormatException e) {
                     System.out.println("DEBUG: Error parsing line " + lineNumber + ": Invalid number format (" + e.getMessage() + ")");
+                    continue;
+                } catch (Exception e) {
+                    System.out.println("DEBUG: Unexpected error parsing line " + lineNumber + ": " + e.getMessage());
+                    e.printStackTrace(System.out);
+                    continue;
                 }
             }
             if (!hasContent) {
-                System.out.println("DEBUG: File contains no valid lines.");
+                System.out.println("DEBUG: File contains no valid data lines.");
+                System.out.println("ERROR: 'dealership.csv' has no valid vehicle data at: " + file.getAbsolutePath());
                 loadDefaultVehicle();
             }
             System.out.println("DEBUG: Inventory loading complete. Total vehicles loaded: " + inventory.size());
         } catch (IOException e) {
-            System.out.println("DEBUG: Failed to read dealership.txt: " + e.getMessage());
+            System.out.println("DEBUG: Failed to read dealership.csv: " + e.getMessage());
+            System.out.println("ERROR: Unable to read 'dealership.csv' at: " + file.getAbsolutePath());
+            e.printStackTrace(System.out);
             loadDefaultVehicle();
         }
     }
